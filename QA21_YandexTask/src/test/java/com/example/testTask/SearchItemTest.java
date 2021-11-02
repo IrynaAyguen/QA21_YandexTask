@@ -27,29 +27,58 @@ public class SearchItemTest {
 
     @Test
     public void itemTest() throws InterruptedException {
-        clickToMarketTab();  //  Перейти на Яндекс Маркет
+        //  Перейти на Яндекс Маркет
+        clickToMarketTab();
         switchToNextTab(1);
+
+        // Выбрать раздел Экспресс
         selectExpressDepartment();
         acceptCookies();
-        selectDepartmentType("--elektronika/23282330");//        Выбрать раздел Электроника
+
+        // Выбрать раздел Электроника
+        selectDepartmentType("--elektronika/23282330");
+
+        //Выбрать раздел Смартфоны. Зайти в расширенный поиск. Задать параметр поиска от 20000 до 35000 рублей.
+        //Выбрать производителя “Apple” . Применить условия поиска
         filterItem("smartfony-i-aksessuary/23282379", "20000", "35000", "Apple");
 
-        driver.navigate().refresh();
-        Thread.sleep(2000);
+        refreshAndSleep(2000);
 
-        //        Запомнить второй элемент в результатах поиска
-        String itemName = driver.findElement(By.xpath("//*[@data-autotest-id='product-snippet'][2]//h3")).getText();
-        System.out.println(itemName);
-        //        В поисковую строку ввести запомненное значение.
-        type(By.id("header-search"),itemName);
-        click(By.cssSelector("[data-r='search-button']"));
+        //  Запомнить второй элемент в результатах поиска
+        String itemName = getItemName(2);
 
-        //        Найти и проверить, что наименование товара соответствует запомненному значению.
-        String foundItemName = driver.findElement(By.xpath("//*[@data-autotest-id='product-snippet'][1]//h3")).getText();
+        //  В поисковую строку ввести запомненное значение.Найти товар.
+        typeAndSearchOfSeconfElement(itemName);
+
+        //  проверить, что наименование товара соответствует запомненному значению.
+        String foundItemName = getItemName(1);
+        SleepAndAssert(5000,itemName, foundItemName);
+    }
+
+    private String getItemName(int n) {
+        return getTextOfElement(By.xpath("//*[@data-autotest-id='product-snippet']["+n+"]//h3"));
+    }
+
+    public void SleepAndAssert(int millisekonds, String itemName, String foundItemName) throws InterruptedException {
+        Thread.sleep(millisekonds);
         Assert.assertEquals(foundItemName, itemName);
     }
 
-    private void filterItem(String itemType, String priceFrom, String priceTo, String brand) throws InterruptedException {
+    public void typeAndSearchOfSeconfElement(String itemName) {
+        type(By.id("header-search"), itemName);
+        click(By.cssSelector("[data-r='search-button']"));
+    }
+
+    public String getTextOfElement(By locator) {
+        return driver.findElement(locator).getText();
+    }
+
+    public void refreshAndSleep(int millisekonds) throws InterruptedException {
+        driver.navigate().refresh();
+        Thread.sleep(millisekonds);
+    }
+
+    public void filterItem(String itemType, String priceFrom, String priceTo, String brand) throws InterruptedException {
         click(By.cssSelector("[href='/catalog--"+ itemType +"/list?onstock=1&how=dpop&cvredirect=3&track=srch_ddl']")); //        Выбрать раздел Смартфоны
         Actions actions = new Actions(driver);  // jump down
         actions.sendKeys(Keys.PAGE_DOWN).build().perform();
@@ -64,15 +93,15 @@ public class SearchItemTest {
         click(By.cssSelector("[href='/catalog" + depType +"/list?filter-express-delivery=1&searchContext=express']"));
     }
 
-    private void acceptCookies() {
+    public void acceptCookies() {
         click(By.cssSelector("[data-id='button-all']"));
     }
 
-    private void selectExpressDepartment() {
+    public void selectExpressDepartment() {
         click(By.cssSelector("div:nth-child(3) ._3z8Gf"));
     }
 
-    private void clickToMarketTab() {
+    public void clickToMarketTab() {
         click(By.cssSelector("[data-id='market']"));
     }
 
@@ -98,7 +127,5 @@ public class SearchItemTest {
         driver.quit();
     }
 }
-
-
 
 
